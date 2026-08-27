@@ -2,7 +2,9 @@
 
 > Recruiter summary: AI systems reliability, Pydantic validation, bounded retry design, failure observability, schema evolution, auditability, deterministic testing, and a polished Next.js product surface.
 
-**Vercel landing page:** [deployment link will be added after publish](https://vercel.com/)
+**Vercel landing page:** [typeproof-workbench.vercel.app](https://typeproof-workbench.vercel.app)
+
+**Private GitHub repository:** [HarshMehta9000/typeproof](https://github.com/HarshMehta9000/typeproof)
 
 Typeproof is a Pydantic-first JSON extraction workbench. It treats model output as untrusted input, validates it against a typed contract, records failures, repairs only the invalid structure, and returns an object only after the schema passes.
 
