@@ -1,56 +1,51 @@
 # Typeproof
 
-> Recruiter summary: AI systems reliability, Pydantic validation, bounded retry design, failure observability, schema evolution, auditability, deterministic testing, and a polished Next.js product surface.
+**Live Vercel app:** [typeproof-workbench.vercel.app](https://typeproof-workbench.vercel.app)
 
-**Vercel landing page:** [typeproof-workbench.vercel.app](https://typeproof-workbench.vercel.app)
+## About
 
-**Private GitHub repository:** [HarshMehta9000/typeproof](https://github.com/HarshMehta9000/typeproof)
+Typeproof turns untrusted model output into data your app can trust. It reads text, builds a typed object, checks every field with Pydantic, records failures, and retries only the broken part. The demo uses ten honest fixtures, SQLite storage, and an in-memory test fallback so each step can be inspected, tested, and explained. It stays easy to use.
 
-Typeproof is a Pydantic-first JSON extraction workbench. It treats model output as untrusted input, validates it against a typed contract, records failures, repairs only the invalid structure, and returns an object only after the schema passes.
+## Main ideas
 
-## Why this project signals engineering strength
-
-- **Typed AI boundary:** Pydantic v2 validates dates, required fields, types, confidence bounds, and extra-field policy.
-- **Bounded repair loop:** invalid output becomes a recorded attempt, then a targeted retry. The UI shows failed, repairing, and accepted states.
-- **Operational visibility:** retry ledger, failure observatory, provider mode comparison, constraint revalidation, schema evolution, and adjudication are visible product surfaces.
-- **Honest demo design:** ten fixtures are deterministic and labeled as simulated. Deliberate failures are visible instead of hidden behind made-up model claims.
-- **Production-minded fallback:** SQLite is the durable storage path, with in-memory SQLite for tests and local fallback behavior.
-- **Usable product direction:** the default landing view is a simple two-step flow. The full schema and debugging workbench remains one click away.
+- **Typed output:** Pydantic checks dates, required fields, types, confidence, and extra fields.
+- **Safe repair:** a failed result is recorded, then only the broken part is retried.
+- **Clear records:** the app shows the source, result, error, retry, and final status together.
+- **Honest demo:** ten local fixtures are labeled as simulated. The app does not invent model results.
+- **Simple first view:** the landing page has two steps. The full workbench is still one click away.
 
 ## Live demo
 
-The published Vercel URL is listed at the top of this README.
+Open [Typeproof on Vercel](https://typeproof-workbench.vercel.app). Choose an example, run it, and inspect the typed `NewsEntity` result.
 
-## Product flow
+## How it works
 
-1. Choose a source fixture from the library.
-2. Run deterministic extraction.
-3. Inspect the typed `NewsEntity` result.
-4. If validation fails, review the exact field and bounded repair attempt.
-5. Open Advanced workbench for schema fields, retries, modes, constraints, evolution, and adjudication.
+1. Choose a source fixture.
+2. Run the extraction.
+3. Check the typed result.
+4. If a field fails, review the error and retry.
+5. Open Advanced workbench for the schema, retry ledger, modes, constraints, schema changes, and review tools.
 
-## Labels and what they mean
+## Labels
 
-- **Deterministic demo:** the UI uses a local fixture provider. It does not claim live model quality, latency, or token measurements.
-- **Pydantic v2:** the output contract is expressed as a typed Python model and checked before success.
-- **Needs repair:** the candidate object failed a visible constraint and is not presented as accepted.
-- **Repair accepted:** the bounded retry produced a candidate that satisfies the typed contract.
-- **Schema valid:** every displayed field passed validation and can move to the next application step.
-- **SQLite fallback ready:** durable SQLite is supported by the backend reference implementation, with in-memory SQLite for tests.
-- **OpenAI-compatible adapter idle:** the provider boundary is ready for a compatible model adapter, while the demo stays local and keyless.
+- **Deterministic demo:** the result comes from a local fixture. It is not a live model test.
+- **Pydantic v2:** the output is checked against a typed Python model.
+- **Needs repair:** a field failed validation. The result is not accepted.
+- **Repair accepted:** a retry passed the typed contract.
+- **Schema valid:** every displayed field passed validation.
+- **SQLite fallback ready:** the backend supports SQLite and an in-memory SQLite test path.
+- **OpenAI-compatible adapter idle:** a compatible provider can be connected later. The demo runs without a key.
 
-## Fixture library
+## Ten source fixtures
 
-All ten examples are selectable and update the source, output, status, issue, and retry behavior together.
-
-| Fixture | Style | Format | Behavior |
+| Fixture | Style | Format | Result |
 | --- | --- | --- | --- |
-| `board_appointment_01` | wire brief | plain text | invalid calendar date, repaired |
+| `board_appointment_01` | wire brief | plain text | invalid date, repaired |
 | `market_exit_02` | analyst note | plain text | valid direct path |
-| `partnership_03` | press release | quoted release | invalid calendar date, repaired |
+| `partnership_03` | press release | quoted release | invalid date, repaired |
 | `funding_04` | wire story | plain text | valid direct path |
 | `docket_05` | court docket | structured lines | missing organization, repaired |
-| `transcript_06` | earnings transcript | speaker turns | confidence type issue, repaired |
+| `transcript_06` | earnings transcript | speaker turns | confidence issue, repaired |
 | `bulletin_07` | regulatory bulletin | bulletin | extra field, repaired |
 | `email_08` | internal email | email | valid direct path |
 | `interview_09` | radio transcript | quoted transcript | source span issue, repaired |
@@ -58,15 +53,15 @@ All ten examples are selectable and update the source, output, status, issue, an
 
 ## Example inputs
 
-### Wire brief with an invalid date
+### Wire brief
 
 ```text
 Aster Labs appointed Maya Chen as chief operating officer on 2024-13-40 after the board approved its expansion plan.
 ```
 
-Expected behavior: the date is blocked, persisted as a validation failure, then repaired to `2024-02-14` on the next attempt.
+The invalid date is shown, recorded, and repaired to `2024-02-14`.
 
-### Earnings transcript with a confidence issue
+### Earnings transcript
 
 ```text
 Q: What changed this quarter?
@@ -75,44 +70,75 @@ Q: Are you confident?
 A: Yes, very.
 ```
 
-Expected behavior: the deterministic fixture marks `confidence` as the invalid path, then repairs the typed value.
+The confidence issue is shown and repaired by the fixture flow.
 
-### JSON webhook with a valid direct path
+### JSON webhook
 
 ```json
 {"event":"leadership_change","org":"Vela Robotics","person":"Ari Kim","effective_date":"2024-08-19","action":"joined"}
 ```
 
-Expected behavior: the JSON envelope maps to a valid `NewsEntity` in one attempt.
+This valid example passes in one attempt.
 
 ## GIF walkthroughs
 
-The GIFs are included in the repository so the product behavior is reviewable without opening the app.
+### 1. Full simulation
 
 ![Full Typeproof simulation](typeproof-gifs/00-full-typeproof-simulation.gif)
 
-- [Full Typeproof simulation](typeproof-gifs/00-full-typeproof-simulation.gif)
-- [Seeded validation playback](typeproof-gifs/01-seeded-validation-playback.gif)
-- [Malformed output repair](typeproof-gifs/02-malformed-output-repair.gif)
-- [Schema tree inspection](typeproof-gifs/03-schema-tree-inspection.gif)
-- [Failure observatory filtering](typeproof-gifs/04-failure-observatory-filter.gif)
-- [Function calling versus JSON mode](typeproof-gifs/05-function-vs-json-mode.gif)
-- [Constraint revalidation](typeproof-gifs/06-constraint-revalidation.gif)
-- [Schema evolution and adjudication](typeproof-gifs/07-evolution-and-adjudication.gif)
-- [Architecture and local run](typeproof-gifs/08-architecture-local-run.gif)
-- [Fixture library selector](typeproof-gifs/09-fixture-library-selector.gif)
-- [Repair and valid fixture path](typeproof-gifs/10-repair-and-valid-fixture-path.gif)
-- [Contract and audit improvements](typeproof-gifs/11-contract-and-audit-improvements.gif)
+### 2. Seeded validation playback
+
+![Seeded validation playback](typeproof-gifs/01-seeded-validation-playback.gif)
+
+### 3. Malformed output repair
+
+![Malformed output repair](typeproof-gifs/02-malformed-output-repair.gif)
+
+### 4. Schema tree inspection
+
+![Schema tree inspection](typeproof-gifs/03-schema-tree-inspection.gif)
+
+### 5. Failure observatory filtering
+
+![Failure observatory filtering](typeproof-gifs/04-failure-observatory-filter.gif)
+
+### 6. Function calling and JSON mode
+
+![Function calling and JSON mode](typeproof-gifs/05-function-vs-json-mode.gif)
+
+### 7. Constraint revalidation
+
+![Constraint revalidation](typeproof-gifs/06-constraint-revalidation.gif)
+
+### 8. Schema evolution and adjudication
+
+![Schema evolution and adjudication](typeproof-gifs/07-evolution-and-adjudication.gif)
+
+### 9. Architecture and local run
+
+![Architecture and local run](typeproof-gifs/08-architecture-local-run.gif)
+
+### 10. Fixture library selector
+
+![Fixture library selector](typeproof-gifs/09-fixture-library-selector.gif)
+
+### 11. Repair and valid fixture path
+
+![Repair and valid fixture path](typeproof-gifs/10-repair-and-valid-fixture-path.gif)
+
+### 12. Contract and audit improvements
+
+![Contract and audit improvements](typeproof-gifs/11-contract-and-audit-improvements.gif)
 
 ## Stack
 
-- Next.js and React for the interactive workbench
-- TypeScript for the product surface
-- FastAPI and Pydantic v2 for the backend reference implementation
-- SQLite for durable attempt records
-- In-memory SQLite fallback for tests
+- Next.js and React
+- TypeScript
+- FastAPI and Pydantic v2
+- SQLite
+- In-memory SQLite for tests
 - OpenAI-compatible provider boundary
-- ESLint, pytest, and deterministic fixtures for verification
+- ESLint and pytest
 
 ## Run locally
 
@@ -121,7 +147,9 @@ npm install
 npm run dev
 ```
 
-The app opens at `http://localhost:3000` by default. The backend reference implementation can be run with:
+The app runs at `http://localhost:3000` by default.
+
+To run the backend reference implementation:
 
 ```bash
 python -m venv .venv
@@ -130,7 +158,7 @@ pip install -r backend/requirements.txt
 PYTHONPATH=backend uvicorn typeproof.api:app --reload
 ```
 
-## Verification
+## Tests
 
 ```bash
 npm run build
@@ -138,14 +166,13 @@ npm run lint
 PYTHONPATH=backend .venv/bin/pytest -q backend/tests
 ```
 
-## Integrity notes
+## Notes
 
-- The ten source fixtures are labeled deterministic and simulated in the app.
-- Fixture-specific failures are intentional and visible in the retry ledger.
-- The local demo requires no API key.
-- The backend reference implementation demonstrates bounded retries and persisted validation failures.
-- The GIFs document the actual product flow and are not placeholder marketing assets.
+- The ten fixtures are local, deterministic, and labeled as simulated.
+- Their failures are intentional and visible.
+- The demo needs no API key.
+- The GIFs show the actual product flow.
 
-## Contributor
+## Author
 
-- Harsh Mehta, sole author and maintainer
+Harsh Mehta

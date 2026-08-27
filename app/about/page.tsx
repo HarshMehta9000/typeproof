@@ -10,7 +10,7 @@ export default function About() {
       <section className="about-content">
         <div className="eyebrow">about / architecture</div>
         <h1>Structured output should earn its way into your app.</h1>
-        <p className="about-lede">Typeproof is a small, inspectable extraction agent: every model response is treated as untrusted input, parsed, validated, persisted when it fails, and only returned once it satisfies a real Pydantic schema.</p>
+        <p className="about-lede">Typeproof turns untrusted model output into data your app can trust. It reads text, builds a typed object, checks every field with Pydantic, records failures, and retries only the broken part. The demo uses ten honest fixtures, SQLite storage, and an in-memory test fallback so each step can be inspected, tested, and explained. It stays easy to use.</p>
         <div className="about-grid">
           <div><span className="eyebrow">engine</span><pre>{`received → request → parse → validate → success\n                         ↘ failure → persist → repair → retry`}</pre></div>
           <div><span className="eyebrow">local run</span><pre>{`pip install -r requirements.txt\nuvicorn typeproof.api:app --reload\n\n# deterministic demo\ncurl -X POST localhost:8000/extract`}</pre></div>
