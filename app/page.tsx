@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 
 type Tab = 'failures' | 'mode' | 'constraints' | 'evolution' | 'adjudication';
 type AttemptState = 'success' | 'failed' | 'repairing' | 'queued';
@@ -61,8 +62,9 @@ export default function Home() {
   const [selectedField, setSelectedField] = useState('date');
   const [selectedAttempt, setSelectedAttempt] = useState(1);
   const [activeTab, setActiveTab] = useState<Tab>('failures');
+  const [uiMode, setUiMode] = useState<'simple' | 'advanced'>('simple');
   const [providerMode, setProviderMode] = useState<'function' | 'json'>('function');
-  const [playback, setPlayback] = useState(true);
+  const [playback, setPlayback] = useState(false);
   const [playbackStep, setPlaybackStep] = useState(1);
   const [running, setRunning] = useState(false);
   const [showAllFailures, setShowAllFailures] = useState(false);
@@ -115,8 +117,10 @@ export default function Home() {
     { id: 'fail_0188', path: 'organization', type: 'missing', retry: 3, mode: 'function', time: '1h ago', tone: 'coral' },
   ].filter((failure) => `${failure.id} ${failure.path} ${failure.type}`.toLowerCase().includes(filter.toLowerCase()));
 
+  if (uiMode === 'simple') return <SimpleView currentFixture={currentFixture} selectedFixtureId={selectedFixtureId} onSelectFixture={selectFixture} onRun={runExtraction} onOpenAdvanced={() => setUiMode('advanced')} running={running} isBlocked={isBlocked} />;
+
   return <main className="app-shell">
-    <header className="topbar"><div className="brand-lockup"><div className="brand-mark"><span>{'{'}</span><b>✓</b><span>{'}'}</span></div><div><div className="brand-name">Typeproof</div><div className="brand-kicker">validated JSON agent</div></div></div><div className="breadcrumb"><span className="muted">workbench</span><span>/</span><b>news-entity-extraction</b><span className="version">schema v0.3</span></div><div className="top-actions"><span className="seed-pill"><span className="dot" /> seeded playback</span><a className="about-link" href="/about">about</a><button className="icon-btn" aria-label="Settings"><Icon>⌘</Icon></button></div></header>
+    <header className="topbar"><div className="brand-lockup"><div className="brand-mark"><span>{'{'}</span><b>✓</b><span>{'}'}</span></div><div><div className="brand-name">Typeproof</div><div className="brand-kicker">validated JSON agent</div></div></div><div className="breadcrumb"><span className="muted">workbench</span><span>/</span><b>news-entity-extraction</b><span className="version">schema v0.3</span></div><div className="top-actions"><button className="view-toggle" onClick={() => setUiMode('simple')}>simple view</button><span className="seed-pill"><span className="dot" /> seeded playback</span><a className="about-link" href="/about">about</a><button className="icon-btn" aria-label="Settings"><Icon>⌘</Icon></button></div></header>
     <div className="app-body">
       <nav className="index-rail" aria-label="Workbench index"><button className="rail-item active" aria-label="Workbench"><Icon>⌗</Icon><small>work</small></button><button className="rail-item" aria-label="Schema"><Icon>⌬</Icon><small>schema</small></button><button className="rail-item" aria-label="Failures" onClick={() => setActiveTab('failures')}><Icon>⌁</Icon><small>errors</small><i>3</i></button><button className="rail-item" aria-label="Mode lab" onClick={() => setActiveTab('mode')}><Icon>◐</Icon><small>lab</small></button><button className="rail-item" aria-label="Adjudication" onClick={() => setActiveTab('adjudication')}><Icon>⊙</Icon><small>review</small></button><div className="rail-spacer" /><button className="rail-item rail-help" aria-label="Keyboard shortcuts"><Icon>?</Icon><small>keys</small></button></nav>
       <section className="workspace">
@@ -132,6 +136,25 @@ export default function Home() {
         {activeTab === 'mode' && <ModeLab />}{activeTab === 'constraints' && <ConstraintPlayground strictDate={strictDate} setStrictDate={setStrictDate} noExtras={noExtras} setNoExtras={setNoExtras} minConfidence={minConfidence} setMinConfidence={setMinConfidence} validFixtures={validFixtures} />}{activeTab === 'evolution' && <Evolution />}{activeTab === 'adjudication' && <Adjudication />}
       </div></section>
     </div><footer className="statusbar"><span><i className="status-dot" /> local deterministic provider</span><span>SQLite fallback ready</span><span>OpenAI-compatible adapter idle</span><span className="status-right">last validation 11:42:08 CST　⌘ enter to run</span></footer>
+  </main>;
+}
+
+function SimpleView({ currentFixture, selectedFixtureId, onSelectFixture, onRun, onOpenAdvanced, running, isBlocked }: { currentFixture: Fixture; selectedFixtureId: string; onSelectFixture: (id: string) => void; onRun: () => void; onOpenAdvanced: () => void; running: boolean; isBlocked: boolean }) {
+  const status = running ? 'repairing' : isBlocked ? 'needs repair' : 'schema valid';
+  const statusTone = running || isBlocked ? 'simple-status-warn' : 'simple-status-good';
+  const output = currentFixture.entity;
+
+  return <main className="simple-shell">
+    <header className="simple-topbar"><Link className="simple-brand" href="/"><span className="brand-mark"><span>{'{'}</span><b>✓</b><span>{'}'}</span></span><span><b>Typeproof</b><small>validated JSON agent</small></span></Link><nav className="simple-nav"><a href="/about">about</a><button className="view-toggle active" onClick={onOpenAdvanced}>advanced workbench <span>↗</span></button></nav></header>
+    <section className="simple-main">
+      <div className="simple-intro"><div className="eyebrow">A calmer way to inspect structured output</div><h1>Turn messy text into a typed object.</h1><p>Pick an example, run the extraction, and see exactly what the schema accepts. Typeproof keeps invalid output out of your app.</p><span className="simple-truth"><i className="status-dot" /> deterministic demo · no provider key required</span></div>
+      <div className="simple-steps"><span><b>01</b> choose a source</span><span className="simple-line" /><span><b>02</b> review the result</span></div>
+      <div className="simple-grid">
+        <section className="simple-card simple-input-card"><div className="simple-card-heading"><div><span className="eyebrow">01 / input</span><h2>Choose an example</h2></div><span className="simple-count">{fixtures.length} fixtures</span></div><label className="simple-select-label" htmlFor="simple-fixture">Source library</label><select id="simple-fixture" className="simple-select" value={selectedFixtureId} onChange={(event) => onSelectFixture(event.target.value)}>{fixtures.map((fixture) => <option key={fixture.id} value={fixture.id}>{fixture.name} · {fixture.style}</option>)}</select><div className="simple-tags"><span>{currentFixture.format}</span><span>{currentFixture.size} source</span><span className={currentFixture.status === 'valid' ? 'tag-good' : 'tag-warn'}>{currentFixture.status === 'valid' ? 'valid fixture' : 'deliberate failure'}</span></div><div className="simple-source"><div className="simple-source-meta"><span>source text</span><span>{currentFixture.text.length} chars</span></div><p>{currentFixture.text}</p></div><button className="simple-run" onClick={onRun} disabled={running}>{running ? 'checking the fixture…' : 'run extraction'} <span>↗</span></button><p className="simple-help">Want to paste your own text? <button onClick={onOpenAdvanced}>Open Advanced workbench</button></p></section>
+        <section className="simple-card simple-result-card"><div className="simple-card-heading"><div><span className="eyebrow">02 / result</span><h2>Review the typed object</h2></div><span className={`simple-status ${statusTone}`}><i /> {status}</span></div><div className={`simple-result-banner ${statusTone}`}><span className="simple-result-icon">{running ? '…' : isBlocked ? '!' : '✓'}</span><div><b>{running ? 'Repairing the invalid output' : isBlocked ? `One field needs attention: ${currentFixture.issue}` : 'All fields passed validation'}</b><small>{running ? 'The bounded retry is checking the Pydantic contract.' : isBlocked ? currentFixture.errorDetail : 'This object is safe to pass to the next step.'}</small></div></div><div className="simple-object"><div className="simple-object-top"><span className="json-brace">{ }</span><b>NewsEntity</b><span className="mono">Pydantic v2</span></div>{(['person', 'organization', 'date', 'action', 'confidence'] as const).map((field) => <div key={field} className={`simple-field ${field === currentFixture.issue || (field === 'date' && isBlocked) ? 'simple-field-invalid' : ''}`}><span>{field}</span><b>{field === 'date' && isBlocked ? currentFixture.rawDate : output[field]}</b><i>{field === currentFixture.issue || (field === 'date' && isBlocked) ? '×' : '✓'}</i></div>)}</div><div className="simple-result-footer"><span>attempt {running ? '01' : isBlocked ? '01 / 3' : currentFixture.issue ? '02 / 3' : '01 / 3'}</span><span>{currentFixture.issue && !isBlocked && !running ? 'repair accepted' : currentFixture.issue ? 'validation recorded' : 'no retry required'}</span></div></section>
+      </div>
+      <div className="simple-proof"><span><b>✓</b> Pydantic schema validation</span><span><b>↻</b> bounded repair retries</span><span><b>▣</b> SQLite + memory fallback</span><button onClick={onOpenAdvanced}>See the full workbench <span>↗</span></button></div>
+    </section>
   </main>;
 }
 
