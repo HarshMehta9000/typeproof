@@ -13,7 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Untitled site',
+  title: 'Typeproof | Validated JSON Agent',
+  description: 'A Pydantic-first JSON extraction workbench that validates, repairs, and audits untrusted model output.',
 };
 
 export default function RootLayout({
